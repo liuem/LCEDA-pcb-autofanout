@@ -25,6 +25,8 @@ function main() {
 	const rootDir = path.join(__dirname, '../');
 	const extensionName = extensionConfig.name ?? 'extension';
 	const extensionVersion = extensionConfig.version ?? '1.0.0';
+	// 全新 checkout（如 CI）没有 build/dist 目录，先确保存在再写入
+	fs.ensureDirSync(path.join(__dirname, 'dist'));
 	const outputPath = path.join(__dirname, 'dist', `${extensionName}_v${extensionVersion}.eext`);
 
 	packageExtension(rootDir, outputPath).then(() => {
