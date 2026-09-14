@@ -199,7 +199,7 @@
 		try {
 			// 双写：sys_Storage（扩展读取）+ localStorage（本页面快速回显）
 			storage.setExtensionUserConfig(CONFIG_KEY, JSON.stringify(cfg));
-			localStorage.setItem('ai-pcb-autofanout.config', JSON.stringify(cfg));
+			localStorage.setItem('lceda-pcb-autofanout.config', JSON.stringify(cfg));
 			fill(cfg); // 回显钳位后的值
 			return true;
 		}

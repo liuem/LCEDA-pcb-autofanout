@@ -219,7 +219,7 @@ export async function dumpDiagnostics(): Promise<void> {
 export function about(): void {
 	const cfg = loadConfig();
 	eda.sys_Dialog.showInformationMessage(
-		`电源地就近打孔（ai-pcb-autofanout）\n\n对电压/GND 网络焊盘 8 方向就近扇出过孔（可选盘中孔：焊盘中心直放）：位置通过板边/障碍间距预检查 + DRC 后校验双保险；真直插焊盘（多层+全孔+焊环三重甄别）自动跳过，封装脏孔数据自动按贴片处理；连线宽度自适应且不超过焊盘尺寸；超引脚数器件（BGA）自动忽略。\n\n当前配置：\n${configSummary(cfg)}\n\n单位换算：1mm = ${MM_TO_MIL.toFixed(2)}mil`,
+		`电源地就近打孔（LCEDA-pcb-autofanout）\n\n对电压/GND 网络焊盘 8 方向就近扇出过孔（可选盘中孔：焊盘中心直放）：位置通过板边/障碍间距预检查 + DRC 后校验双保险；真直插焊盘（多层+全孔+焊环三重甄别）自动跳过，封装脏孔数据自动按贴片处理；连线宽度自适应且不超过焊盘尺寸；超引脚数器件（BGA）自动忽略。\n\n当前配置：\n${configSummary(cfg)}\n\n单位换算：1mm = ${MM_TO_MIL.toFixed(2)}mil`,
 		'关于',
 	);
 }

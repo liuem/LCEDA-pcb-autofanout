@@ -1,4 +1,4 @@
-# ai-pcb-autofanout 电源地就近打孔
+# LCEDA-pcb-autofanout 电源地就近打孔
 
 嘉立创EDA专业版（EDA Pro / EasyEDA Pro）扩展：对**电压/GND 网络**的焊盘自动**就近扇出过孔**（打孔 + 焊盘到过孔连线，可选**盘中孔**：过孔直接打在焊盘中心），位置经过间距预检查与 DRC 后校验双保险。
 
@@ -53,7 +53,7 @@
 npm install          # 或复制已有 SDK 工程的 node_modules
 node test/run-offline.ts   # 离线测试（合成板 + 10.8 万项断言）
 npm run lint
-npm run build        # 产出 build/dist/ai-pcb-autofanout_vX.Y.Z.eext
+npm run build        # 产出 build/dist/lceda-pcb-autofanout_vX.Y.Z.eext
 ```
 源码结构：
 
@@ -109,7 +109,7 @@ Apache-2.0
 
 ## 开源 / Open Source
 
-代码开源于 GitHub：`https://github.com/<作者用户名>/ai-pcb-autofanout`【TODO：替换为实际地址】
+代码开源于 GitHub：`https://github.com/<作者用户名>/lceda-pcb-autofanout`【TODO：替换为实际地址】
 
 - CI：push / PR 自动执行 lint + 10.8 万项离线测试并构建 `.eext`；打 `v*` 标签自动发布 Release 并附安装包
 - 面向使用者的完整文档见 [docs/使用说明.md](docs/使用说明.md)（嘉立创扩展商店页面同文）
