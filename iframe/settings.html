@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打孔设置</title>
+<style>
+	:root { --bg:#1e222a; --panel:#262b36; --border:#3a4150; --text:#dfe4ec; --dim:#8b93a5; --accent:#4f8ef7; --ok:#3fb96f; --err:#e05c5c; }
+	* { box-sizing:border-box; }
+	html,body { margin:0; height:100%; background:var(--bg); color:var(--text);
+		font:13px/1.5 system-ui,"Segoe UI","Microsoft YaHei",sans-serif; }
+	.wrap { padding:12px 16px 64px; }
+	#banner { font-size:12px; padding:6px 10px; border-radius:6px; margin-bottom:10px; display:none; }
+	#banner.err { display:block; background:rgba(224,92,92,.12); color:var(--err); }
+	h3 { font-size:13px; color:var(--accent); margin:12px 0 6px; border-bottom:1px solid var(--border); padding-bottom:4px; }
+	.row { display:flex; align-items:center; gap:10px; margin:7px 0; }
+	.row label { width:200px; color:var(--dim); flex-shrink:0; }
+	input[type=text],input[type=number],select {
+		flex:1; padding:6px 9px; border:1px solid var(--border); border-radius:6px; background:var(--panel); color:var(--text); font-size:13px; outline:none; }
+	input:focus,select:focus { border-color:var(--accent); }
+	.hint { font-size:11px; color:var(--dim); margin:-3px 0 6px 210px; }
+	/* 提高选择器优先级：避免被 .row label 的 width:200px 覆盖导致滑轨拉长 */
+	.row label.switch { position:relative; width:38px; height:20px; flex-shrink:0; }
+	.switch input { opacity:0; width:0; height:0; }
+	.slider { position:absolute; inset:0; background:var(--border); border-radius:10px; cursor:pointer; transition:.2s; }
+	.slider:before { content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.2s; }
+	.switch input:checked + .slider { background:var(--accent); }
+	.switch input:checked + .slider:before { transform:translateX(18px); }
+	#bar { position:fixed; bottom:0; left:0; right:0; display:flex; gap:8px; padding:10px 16px;
+		background:var(--panel); border-top:1px solid var(--border); }
+	#bar button { flex:1; padding:8px; border:1px solid var(--border); border-radius:6px; background:#303748; color:var(--text); cursor:pointer; }
+	#bar button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+	#toast { position:fixed; top:10px; left:50%; transform:translateX(-50%); padding:6px 16px; border-radius:14px;
+		background:var(--accent); color:#fff; font-size:12px; opacity:0; transition:.3s; pointer-events:none; }
+	#toast.show { opacity:1; }
+	#toast.ok { background:var(--ok); }
+	#toast.err { background:var(--err); }
+</style>
+</head>
+<body>
+<div class="wrap">
+	<div id="banner"></div>
+
+	<h3>网络</h3>
+	<div class="row"><label>包含地网络（GND 族）</label><label class="switch"><input type="checkbox" id="includeGround" checked><span class="slider"></span></label></div>
+	<div class="row"><label>包含电源网络（VCC/3V3/+5V…）</label><label class="switch"><input type="checkbox" id="includePower" checked><span class="slider"></span></label></div>
+	<div class="row"><label>叠加内置识别规则</label><label class="switch"><input type="checkbox" id="useBuiltinPatterns" checked><span class="slider"></span></label></div>
+	<div class="row"><label>追加自定义网络</label><input type="text" id="netPatterns" placeholder="逗号分隔，如 MOTOR_VDD,AGND"></div>
+	<div class="hint">内置规则之外追加的网络名，忽略大小写整词或包含匹配。</div>
+
+	<h3>过孔</h3>
+	<div class="row"><label>孔径 mm（0.05-1）</label><input type="number" id="viaHoleMm" min="0.05" max="1" step="0.05"></div>
+	<div class="row"><label>外径 mm（&ge;孔径+0.05）</label><input type="number" id="viaDiameterMm" min="0.15" max="3" step="0.05"></div>
+	<div class="hint">常用：0.2/0.4（信号密集）、0.3/0.6（默认，电源地）、0.5/0.9（大电流）。</div>
+	<div class="row"><label>回退小过孔 孔径/外径 mm</label>
+		<input type="number" id="fallbackViaHoleMm" min="0" max="1" step="0.05" style="flex:1">
+		<input type="number" id="fallbackViaDiameterMm" min="0" max="3" step="0.05" style="flex:1"></div>
+	<div class="hint">主过孔 8 方向全阻塞时自动换小一号重试（0402 等小封装密集区）。外径填 0 关闭。</div>
+	<div class="row"><label>就近边界用阻焊层</label><label class="switch"><input type="checkbox" id="useSolderMask" checked><span class="slider"></span></label></div>
+	<div class="hint">开：过孔贴阻焊开窗边缘；关：贴焊盘铜皮边缘。读不到阻焊扩展时自动回退铜皮尺寸。</div>
+	<div class="row"><label>额外伸出余量 mm（0=贴合）</label><input type="number" id="stubMm" min="0" max="2" step="0.05"></div>
+	<div class="hint">边界之外再留的余量；0 表示在间距规则允许范围内就近贴合。</div>
+	<div class="row"><label>盘中孔（打在焊盘中心）</label><label class="switch"><input type="checkbox" id="viaInPad"><span class="slider"></span></label></div>
+	<div class="hint">开：电源/地焊盘中心直接放过孔（无连线，建议配合树脂塞孔/电镀填孔工艺）；过孔放不进焊盘或位置被占时自动回退就近打孔。</div>
+
+	<h3>连线</h3>
+	<div class="row"><label>焊盘→过孔线宽 mm（0=自动）</label><input type="number" id="traceWidthMm" min="0" max="2" step="0.05"></div>
+	<div class="hint">实际线宽恒不超过焊盘尺寸；0 = 自动取 min(焊盘尺寸, 过孔外径)。</div>
+
+	<h3>过滤与避让</h3>
+	<div class="row"><label>忽略器件引脚阈值</label><input type="number" id="maxPins" min="1" max="2000" step="1"></div>
+	<div class="hint">焊盘数超过该值的器件整体忽略（保护 BGA）；LQFP48 可设 64，BGA 保持默认。</div>
+	<div class="row"><label>直插孔跳过判定</label><label class="switch"><input type="checkbox" id="skipThiPads" checked><span class="slider"></span></label></div>
+	<div class="hint">开：真直插焊盘（多层 + 器件全孔 + 焊环完整三重甄别）本身已贯通，不打孔；封装脏孔数据自动按贴片处理。关闭后带孔焊盘全部参与打孔。</div>
+	<div class="row"><label>安全间距 mm（0.05-1）</label><input type="number" id="clearanceMm" min="0.05" max="1" step="0.05"></div>
+	<div class="hint">预检查间距，近似 DRC clearance；建议与设计规则一致（常用 0.2/6mil）。</div>
+	<div class="row"><label>阻塞外扩步数（0-8）</label><input type="number" id="maxSearchSteps" min="0" max="8" step="1"></div>
+	<div class="hint">理想位置被阻塞时沿方向逐档外扩，每档一个过孔外径；0=不外扩。</div>
+	<div class="row"><label>重复打孔合并外扩（0-3）</label><input type="number" id="mergeFactor" min="0" max="3" step="1"></div>
+	<div class="hint">同网络已有过孔在（理想距离 + N 个过孔外径）内则跳过。</div>
+	<div class="row"><label>DRC 后校验与回滚</label><label class="switch"><input type="checkbox" id="useDrcCheck" checked><span class="slider"></span></label></div>
+	<div class="hint">创建后运行真实 DRC，新增违规自动整体回滚本次创建的过孔/连线。</div>
+	<div class="row"><label>宽松模式</label><label class="switch"><input type="checkbox" id="relaxedMode"><span class="slider"></span></label></div>
+	<div class="hint">板子本身已有 DRC 违规时用：忽略间距预检查（仅防完全重叠）、跳过连线通道检查与 DRC 后校验，能打尽打。<b>可能引入新的 DRC 违规。</b></div>
+</div>
+
+<div id="bar">
+	<button id="btnDefaults">恢复默认</button>
+	<button id="btnSave" class="primary">保存设置</button>
+</div>
+<div id="toast"></div>
+
+<script>
+(function () {
+	'use strict';
+	var CONFIG_KEY = 'fanoutConfig';
+	var el = function (id) { return document.getElementById(id); };
+	var banner = el('banner');
+	var storage = null;
+
+	var DEFAULTS = {
+		netPatterns: '', useBuiltinPatterns: true, includePower: true, includeGround: true,
+		viaHoleMm: 0.3, viaDiameterMm: 0.6, fallbackViaHoleMm: 0.2, fallbackViaDiameterMm: 0.4,
+		stubMm: 0, useSolderMask: true, viaInPad: false,
+		traceWidthMm: 0.4, maxPins: 32, skipThiPads: true, clearanceMm: 0.15, maxSearchSteps: 3,
+		mergeFactor: 1, useDrcCheck: true, relaxedMode: false,
+	};
+
+	var NUM_IDS = ['viaHoleMm', 'viaDiameterMm', 'fallbackViaHoleMm', 'fallbackViaDiameterMm', 'stubMm', 'traceWidthMm', 'maxPins', 'clearanceMm', 'maxSearchSteps', 'mergeFactor'];
+	var BOOL_IDS = ['includeGround', 'includePower', 'useBuiltinPatterns', 'useSolderMask', 'viaInPad', 'skipThiPads', 'useDrcCheck', 'relaxedMode'];
+
+	function clamp(v, min, max, dflt) {
+		v = Number(v);
+		if (!Number.isFinite(v))
+			return dflt;
+		return Math.max(min, Math.min(max, v));
+	}
+
+	function toast(text, cls) {
+		var t = el('toast');
+		t.textContent = text;
+		t.className = 'show ' + (cls || '');
+		setTimeout(function () { t.className = ''; }, 2600);
+	}
+
+	// ---- 通道：iframe 被注入 eda 时直接使用 sys_Storage（与 ai-pcb-autoplace 同款方案）----
+	function initStorage() {
+		try {
+			if (typeof eda !== 'undefined' && eda && eda.sys_Storage) {
+				storage = eda.sys_Storage;
+				return true;
+			}
+		}
+		catch (e) { /* ignore */ }
+		banner.textContent = '当前客户端的 iframe 未注入 eda.sys_Storage，无法保存设置。请升级 EDA Pro 客户端到支持扩展 iframe 的版本后重试。';
+		banner.className = 'err';
+		el('btnSave').disabled = true;
+		el('btnDefaults').disabled = true;
+		return false;
+	}
+
+	function loadConfig() {
+		if (!storage)
+			return null;
+		try {
+			var raw = storage.getExtensionUserConfig(CONFIG_KEY);
+			var cfg = typeof raw === 'string' ? JSON.parse(raw) : raw;
+			return cfg && typeof cfg === 'object' ? cfg : {};
+		}
+		catch (e) { return {}; }
+	}
+
+	function fill(cfg) {
+		el('netPatterns').value = cfg.netPatterns || '';
+		for (var i = 0; i < BOOL_IDS.length; i++) {
+			var k = BOOL_IDS[i];
+			el(k).checked = cfg[k] !== undefined ? !!cfg[k] : DEFAULTS[k];
+		}
+		for (var j = 0; j < NUM_IDS.length; j++) {
+			var n = NUM_IDS[j];
+			el(n).value = cfg[n] !== undefined ? cfg[n] : DEFAULTS[n];
+		}
+	}
+
+	function collect() {
+		var cfg = {
+			netPatterns: el('netPatterns').value.trim(),
+		};
+		for (var i = 0; i < BOOL_IDS.length; i++) {
+			var k = BOOL_IDS[i];
+			cfg[k] = el(k).checked;
+		}
+		var hole = clamp(el('viaHoleMm').value, 0.05, 1, DEFAULTS.viaHoleMm);
+		cfg.viaHoleMm = hole;
+		cfg.viaDiameterMm = clamp(el('viaDiameterMm').value, hole + 0.05, 3, Math.max(hole * 2, DEFAULTS.viaDiameterMm));
+		// 回退小过孔：0 关闭；启用时外径必须 < 主过孔外径且 > 孔径
+		var fbDia = clamp(el('fallbackViaDiameterMm').value, 0, 3, DEFAULTS.fallbackViaDiameterMm);
+		if (fbDia === 0 || fbDia >= cfg.viaDiameterMm) {
+			cfg.fallbackViaHoleMm = 0;
+			cfg.fallbackViaDiameterMm = 0;
+		}
+		else {
+			cfg.fallbackViaHoleMm = clamp(el('fallbackViaHoleMm').value, 0.05, fbDia - 0.05, DEFAULTS.fallbackViaHoleMm);
+			cfg.fallbackViaDiameterMm = fbDia;
+		}
+		cfg.stubMm = clamp(el('stubMm').value, 0, 2, DEFAULTS.stubMm);
+		cfg.traceWidthMm = clamp(el('traceWidthMm').value, 0, 2, DEFAULTS.traceWidthMm);
+		cfg.maxPins = Math.round(clamp(el('maxPins').value, 1, 2000, DEFAULTS.maxPins));
+		cfg.clearanceMm = clamp(el('clearanceMm').value, 0.05, 1, DEFAULTS.clearanceMm);
+		cfg.maxSearchSteps = Math.round(clamp(el('maxSearchSteps').value, 0, 8, DEFAULTS.maxSearchSteps));
+		cfg.mergeFactor = clamp(el('mergeFactor').value, 0, 3, DEFAULTS.mergeFactor);
+		return cfg;
+	}
+
+	function save() {
+		if (!storage)
+			return false;
+		var cfg = collect();
+		try {
+			// 双写：sys_Storage（扩展读取）+ localStorage（本页面快速回显）
+			storage.setExtensionUserConfig(CONFIG_KEY, JSON.stringify(cfg));
+			localStorage.setItem('ai-pcb-autofanout.config', JSON.stringify(cfg));
+			fill(cfg); // 回显钳位后的值
+			return true;
+		}
+		catch (e) {
+			toast('保存失败：' + e, 'err');
+			return false;
+		}
+	}
+
+	el('btnSave').onclick = function () {
+		if (save())
+			toast('✓ 已保存（执行打孔时生效）', 'ok');
+	};
+
+	el('btnDefaults').onclick = function () {
+		fill(DEFAULTS);
+		toast('已填入默认值，点击「保存设置」生效');
+	};
+
+	// 拨动/修改即自动保存（避免"只拨开关没点保存导致配置未生效"）
+	function bindAutoSave() {
+		var ids = NUM_IDS.concat(BOOL_IDS).concat(['netPatterns']);
+		ids.forEach(function (id) {
+			el(id).addEventListener('change', function () {
+				if (save())
+					toast('✓ 已自动保存', 'ok');
+			});
+		});
+	}
+
+	if (initStorage()) {
+		fill(loadConfig());
+		bindAutoSave();
+	}
+})();
+</script>
+</body>
+</html>

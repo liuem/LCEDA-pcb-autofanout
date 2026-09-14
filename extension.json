@@ -1,0 +1,74 @@
+{
+	"name": "ai-pcb-autofanout",
+	"uuid": "e4b41778209e47768b4f04e6aba93146",
+	"displayName": "电源地就近打孔",
+	"description": "对电压/GND 网络焊盘就近扇出过孔：过孔贴阻焊层/焊盘边界（间距规则内就近），可选盘中孔（焊盘中心直放）；真直插焊盘三重甄别（多层+全孔+焊环）自动跳过、封装脏孔自动按贴片处理，直线方向优先，连线宽度自适应不超过焊盘尺寸，可忽略高引脚数器件（保护 BGA）。",
+	"version": "0.6.1",
+	"publisher": "liuen",
+	"engines": {
+		"eda": "^3.2.0"
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "extension-store",
+		"url": ""
+	},
+	"categories": "PCB",
+	"keywords": [
+		"Via",
+		"Fanout",
+		"Power",
+		"GND",
+		"PCB"
+	],
+	"images": {
+		"logo": "./images/logo.png"
+	},
+	"homepage": "",
+	"bugs": "",
+	"activationEvents": {},
+	"entry": "./dist/index",
+	"dependentExtensions": {},
+	"headerMenus": {
+		"home": [],
+		"sch": [],
+		"pcb": [
+			{
+				"id": "autofanout-menu",
+				"title": "电源地就近打孔",
+				"menuItems": [
+					{
+						"id": "af-run",
+						"title": "一键打孔",
+						"registerFn": "runFanout"
+					},
+					{
+						"id": "af-preview",
+						"title": "预览（不修改画布）",
+						"registerFn": "previewFanout"
+					},
+					{
+						"id": "af-cleanup",
+						"title": "删除本插件创建的过孔/连线",
+						"registerFn": "cleanupFanout"
+					},
+					{
+						"id": "af-diag",
+						"title": "诊断：输出焊盘明细到控制台",
+						"registerFn": "dumpDiagnostics"
+					},
+					{
+						"id": "af-settings",
+						"title": "设置面板...",
+						"registerFn": "openSettingsPanel"
+					},
+					{
+						"id": "af-about",
+						"title": "关于",
+						"registerFn": "about"
+					}
+				]
+			}
+		]
+	}
+}
