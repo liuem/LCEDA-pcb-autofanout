@@ -109,7 +109,7 @@ Apache-2.0
 
 ## 开源 / Open Source
 
-代码开源于 GitHub：`https://github.com/<作者用户名>/lceda-pcb-autofanout`【TODO：替换为实际地址】
+代码开源于 GitHub：`https://github.com/liuem/LCEDA-pcb-autofanout`
 
 - CI：push / PR 自动执行 lint + 10.8 万项离线测试并构建 `.eext`；打 `v*` 标签自动发布 Release 并附安装包
 - 面向使用者的完整文档见 [docs/使用说明.md](docs/使用说明.md)（嘉立创扩展商店页面同文）
