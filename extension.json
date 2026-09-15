@@ -22,7 +22,8 @@
 		"PCB"
 	],
 	"images": {
-		"logo": "./images/logo.png"
+		"logo": "./images/logo.png",
+		"banner": "./images/banner.jpg"
 	},
 	"homepage": "https://github.com/liuem/LCEDA-pcb-autofanout",
 	"bugs": "https://github.com/liuem/LCEDA-pcb-autofanout/issues",
