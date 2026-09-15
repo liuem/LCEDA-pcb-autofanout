@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const process = require('node:process');
 const JSZip = require('jszip');
 
-const pkg = process.argv[2] || 'build/dist/lceda-pcb-autofanout_v0.6.2.eext';
+const pkg = process.argv[2] || 'build/dist/lceda-pcb-autofanout_v0.6.3.eext';
 JSZip.loadAsync(fs.readFileSync(pkg)).then(async (z) => {
 	const names = Object.keys(z.files).filter(n => !z.files[n].dir);
 	console.log('包内文件:');

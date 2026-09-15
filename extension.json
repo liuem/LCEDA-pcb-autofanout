@@ -3,7 +3,7 @@
 	"uuid": "e4b41778209e47768b4f04e6aba93146",
 	"displayName": "电源地就近打孔",
 	"description": "对电压/GND 网络焊盘自动就近打孔或盘中孔（焊盘中心直放）：贴阻焊边界就近、直线方向优先，真直插三重甄别自动跳过、封装脏孔自动按贴片处理，0402 密集区自动回退小过孔，连线宽度恒不超过焊盘尺寸，BGA 自动保护，DRC 后校验新增违规自动回滚。开源：https://github.com/liuem/LCEDA-pcb-autofanout",
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"publisher": "liuem",
 	"engines": {
 		"eda": "^3.2.0"
